@@ -75,6 +75,7 @@ Los tests usan una base de datos SQLite en memoria con `StaticPool` para garanti
 | POST | `/tasks/` | Crea una nueva tarea |
 | PATCH | `/tasks/{id}` | Actualiza parcialmente una tarea |
 | DELETE | `/tasks/{id}` | Elimina una tarea |
+| GET | `/tasks/status/{status}` | Lista tareas filtradas por estado |
 
 ## Convenciones de código que Devin debe respetar
 
@@ -100,6 +101,7 @@ Los tests usan una base de datos SQLite en memoria con `StaticPool` para garanti
 - Cada test nuevo debe usar el fixture `client` definido en `test_tasks.py`.
 - No conectar a la base de datos de producción (`tareas.db`) desde los tests.
 - Los tests de casos de error deben verificar tanto el código de estado HTTP como el campo `detail` del cuerpo de respuesta.
+- Todos los endpoints nuevos deben incluir al menos un test de caso de error además del happy path.
 
 ### Git
 - Un commit por cambio lógico; mensaje en formato `tipo: descripción breve` (feat, fix, refactor, docs, pruebas).
