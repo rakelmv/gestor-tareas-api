@@ -21,11 +21,9 @@ def list_tasks(
     limit: int = Query(default=10, ge=1),
 ):
     query = db.query(Task)
-    # Bug: usa != en lugar de ==; filtra las tareas que NO tienen el estado solicitado
     if status:
-        query = query.filter(Task.status != status)
-    # Bug: limit se recibe pero nunca se aplica a la query
-    return query.all()
+        query = query.filter(Task.status == status)
+    return query.limit(limit).all()
 
 
 # Devuelve una tarea por su identificador; 404 si no existe
