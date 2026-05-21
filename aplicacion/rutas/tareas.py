@@ -31,6 +31,11 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 # Crea una nueva tarea y devuelve el recurso creado con código 201
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_task(payload: TaskCreate, db: Session = Depends(get_db)):
+    if len(payload.title) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Title must be at least 3 characters long",
+        )
     task = Task(**payload.model_dump())
     db.add(task)
     db.commit()
