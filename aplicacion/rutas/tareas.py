@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from aplicacion.base_de_datos import get_db
 from aplicacion.esquemas import TaskCreate, TaskResponse, TaskUpdate
-from aplicacion.modelos import Task
+from aplicacion.modelos import Task, TaskStatus
 
 # Router con prefijo /tasks; agrupa todos los endpoints de tareas
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -17,6 +17,12 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 @router.get("/", response_model=List[TaskResponse])
 def list_tasks(db: Session = Depends(get_db)):
     return db.query(Task).all()
+
+
+# Devuelve las tareas que coinciden con el estado indicado
+@router.get("/status/{task_status}", response_model=List[TaskResponse])
+def list_tasks_by_status(task_status: TaskStatus, db: Session = Depends(get_db)):
+    return db.query(Task).filter(Task.status == task_status).all()
 
 
 # Devuelve una tarea por su identificador; 404 si no existe
