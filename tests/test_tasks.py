@@ -1,10 +1,8 @@
 # Tests de la API de gestión de tareas con pytest y FastAPI TestClient
 #
-# COBERTURA ACTUAL: solo happy path básico
+# COBERTURA:
 #   - POST /tasks  → crear tarea correctamente
-#   - GET  /tasks  → listar tareas
-#
-# PENDIENTE DE CUBRIR:
+#   - GET  /tasks  → listar tareas (vacía y con datos)
 #   - POST /tasks con título vacío o menor de 3 caracteres (error 422)
 #   - GET  /tasks/{id} con id inexistente (error 404)
 #   - PATCH /tasks/{id} sobre una tarea con estado "done" (error 400)
@@ -100,17 +98,46 @@ def test_listar_tareas_con_datos(client):
 
 
 # ---------------------------------------------------------------------------
-# TODO: casos de error — pendientes de implementar
+# Casos de error
 # ---------------------------------------------------------------------------
 
-# def test_crear_tarea_titulo_vacio(client):
-#     # Debería devolver 422 cuando el título está vacío o tiene menos de 3 caracteres
-#     pass
+def test_crear_tarea_titulo_vacio(client):
+    # Debería devolver 422 cuando el título está vacío o tiene menos de 3 caracteres
+    response = client.post("/tasks/", json={"title": ""})
+    assert response.status_code == 422
 
-# def test_obtener_tarea_no_encontrada(client):
-#     # Debería devolver 404 cuando el id no existe
-#     pass
+    response = client.post("/tasks/", json={"title": "ab"})
+    assert response.status_code == 422
 
-# def test_actualizar_tarea_completada(client):
-#     # Debería devolver 400 cuando se intenta modificar una tarea con estado "done"
-#     pass
+
+def test_obtener_tarea_no_encontrada(client):
+    # Debería devolver 404 cuando el id no existe
+    response = client.get("/tasks/9999")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Task not found"
+
+
+def test_actualizar_tarea_completada(client):
+    # Debería devolver 400 cuando se intenta modificar una tarea con estado "done"
+    create_response = client.post("/tasks/", json={"title": "Tarea para completar"})
+    task_id = create_response.json()["id"]
+
+    client.patch(f"/tasks/{task_id}", json={"status": "done"})
+
+    response = client.patch(f"/tasks/{task_id}", json={"title": "Nuevo título"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Cannot modify a completed task"
+
+
+def test_actualizar_tarea_no_encontrada(client):
+    # Debería devolver 404 cuando el id no existe en PATCH
+    response = client.patch("/tasks/9999", json={"title": "No existe"})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Task not found"
+
+
+def test_eliminar_tarea_no_encontrada(client):
+    # Debería devolver 404 cuando el id no existe en DELETE
+    response = client.delete("/tasks/9999")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Task not found"
