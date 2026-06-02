@@ -2,7 +2,7 @@
 
 ## Descripción del proyecto
 
-API REST para gestionar tareas construida con FastAPI y SQLAlchemy. Permite crear, consultar, actualizar y eliminar tareas. Cada tarea tiene un identificador, título, descripción opcional, estado (`pending`, `in_progress`, `done`) y fecha de creación automática.
+API REST para gestionar tareas construida con FastAPI y SQLAlchemy. Permite crear, consultar, actualizar y eliminar tareas. Cada tarea tiene un identificador, título, descripción opcional, categoría opcional, estado (`pending`, `in_progress`, `done`) y fecha de creación automática.
 
 ## Stack tecnológico
 
@@ -23,8 +23,8 @@ task-manager-api/
 ├── aplicacion/
 │   ├── principal.py       # Punto de entrada: instancia FastAPI y registra routers
 │   ├── base_de_datos.py   # Configuración del engine y sesión de SQLAlchemy
-│   ├── modelos.py         # Modelos ORM (tabla tasks, enum TaskStatus)
-│   ├── esquemas.py        # Esquemas Pydantic de entrada y respuesta
+│   ├── modelos.py         # Modelos ORM (tabla tasks, enum TaskStatus, campo categoria)
+│   ├── esquemas.py        # Esquemas Pydantic de entrada y respuesta (incluye categoria)
 │   └── rutas/
 │       └── tareas.py      # Endpoints REST de tareas
 ├── tests/
