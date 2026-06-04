@@ -174,3 +174,44 @@ def test_delete_task_not_found(client):
     response = client.delete("/tasks/9999")
     assert response.status_code == 404
     assert response.json()["detail"] == "Task not found"
+
+
+# ---------------------------------------------------------------------------
+# Regresión: POST /tasks/ — validación de longitud mínima del título
+# ---------------------------------------------------------------------------
+
+
+def test_create_task_title_too_short_rejected(client):
+    """Un título con menos de 3 caracteres debe ser rechazado con 400."""
+    response = client.post("/tasks/", json={"title": "ab"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "El título debe tener al menos 3 caracteres"
+
+
+def test_create_task_title_only_spaces_rejected(client):
+    """Un título compuesto solo por espacios se considera vacío y debe rechazarse."""
+    response = client.post("/tasks/", json={"title": "   "})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "El título debe tener al menos 3 caracteres"
+
+
+def test_create_task_title_empty_rejected(client):
+    """Un título vacío debe ser rechazado con 400."""
+    response = client.post("/tasks/", json={"title": ""})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "El título debe tener al menos 3 caracteres"
+
+
+# ---------------------------------------------------------------------------
+# Regresión: PATCH /tasks/{id} — bloqueo de modificación de tareas completadas
+# ---------------------------------------------------------------------------
+
+
+def test_update_done_task_rejected(client):
+    """Modificar una tarea ya completada debe devolver 400."""
+    r = client.post("/tasks/", json={"title": "Tarea completa", "status": "done"})
+    task_id = r.json()["id"]
+
+    response = client.patch(f"/tasks/{task_id}", json={"title": "Nuevo título"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "No se puede modificar una tarea completada"
