@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from aplicacion.base_de_datos import get_db
 from aplicacion.esquemas import TaskCreate, TaskResponse, TaskUpdate
-from aplicacion.modelos import Task
+from aplicacion.modelos import Task, TaskStatus
 
 # Router con prefijo /tasks; agrupa todos los endpoints de tareas
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -31,6 +31,11 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 # Crea una nueva tarea y devuelve el recurso creado con código 201
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_task(payload: TaskCreate, db: Session = Depends(get_db)):
+    if len(payload.title.strip()) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El título debe tener al menos 3 caracteres",
+        )
     task = Task(**payload.model_dump())
     db.add(task)
     db.commit()
@@ -44,6 +49,11 @@ def update_task(task_id: int, payload: TaskUpdate, db: Session = Depends(get_db)
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    if task.status == TaskStatus.done:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se puede modificar una tarea completada",
+        )
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(task, field, value)
     db.commit()
